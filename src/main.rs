@@ -1,22 +1,70 @@
 extern crate time;
+extern crate clap;
 
+use clap::{Arg, App};
 use std::io;
 use std::io::Write;
 use std::thread;
 use time::Duration;
 
-const DEFAULT_TASK_MINS: i64= 25;
+const DEFAULT_TASK_MINS: i64  = 25;
 const DEFAULT_BREAK_MINS: i64 = 5;
 
 fn main() {
+
+    let matches = App::new("Pom")
+        .version("1.0")
+        .author("Franklin Van Nes <franklin.vannes@gmail.com>")
+        .about("A command line pomodoro timer that logs your productivity.")
+        .arg(Arg::with_name("Task Minutes")
+             .short("t")
+             .long("task-mins")
+             .value_name("TASKLENGTH")
+             .help("The length of time in minutes to complete your task.")
+             .takes_value(true))
+        .arg(Arg::with_name("Break Minutes")
+             .short("b")
+             .long("break-mins")
+             .value_name("BREAKLENGTH")
+             .help("The length of your break in minutes.")
+             .takes_value(true))
+        .arg(Arg::with_name("TASK")
+             .help("The name of the task, wrapped in quotes")
+             .required(false)
+             .index(1)).get_matches();
+
+
+    let task_name: String;
+    let task_minutes: i64;
+    let break_minutes: i64;
+
+    if matches.is_present("TASK") {
+        task_name = String::from(matches.value_of("TASK").unwrap());
+    } else {
+        task_name = get_task_name_from_user();
+    }
+
+    if matches.is_present("Task Minutes") { 
+        task_minutes =  match matches.value_of("Task Minutes").unwrap().trim().parse() {
+            Ok(mins)    => mins,
+            Err(_)      => DEFAULT_TASK_MINS,
+        };
+    } else {
+        task_minutes = get_task_length_from_user(&task_name);
+    }
+
+    if matches.is_present("Break Minutes") {
+        break_minutes =  match matches.value_of("Break Minutes").unwrap().trim().parse() {
+            Ok(mins)    => mins,
+            Err(_)      => DEFAULT_BREAK_MINS,
+        };
+
+    } else {
+        break_minutes = get_break_length_from_user();
+    }
     println!("Starting Pomodoro...\n");
 
-    let task_name   = get_task_name_from_user();
-    let task_minutes    = get_task_length_from_user(&task_name);
-    let break_minutes   = get_break_length_from_user();
-
     println!("task mins: {}\tbreak mins: {}", task_minutes, break_minutes);
-
 
     println!("Starting {}", task_name);
     countdown(task_minutes);
@@ -24,6 +72,7 @@ fn main() {
     countdown(break_minutes);
     println!("Break is over! Back to work!");
 }
+
 
 fn get_task_name_from_user() -> String{
     let mut task_name = String::new();
@@ -43,10 +92,10 @@ fn get_task_length_from_user(task_name: &String) -> i64 {
 
     io::stdin().read_line(&mut task_min_input)
         .expect("Failed to read line");
-
+    
     return match task_min_input.trim().parse() {
-        Ok(mins) => mins,
-        Err(_)   => DEFAULT_TASK_MINS,
+        Ok(mins)    => mins,
+        Err(_)      => DEFAULT_TASK_MINS,
     };
 }
 
@@ -78,5 +127,5 @@ fn countdown(num_minutes: i64) {
         print_time(end_time - now);
         thread::sleep(std::time::Duration::from_secs(1));
         now = time::now();
-    } 
+    }
 }
