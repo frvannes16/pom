@@ -1,6 +1,8 @@
 extern crate time;
 extern crate clap;
+extern crate colored;
 
+use colored::*;
 use clap::{Arg, App};
 use std::io;
 use std::io::Write;
@@ -62,11 +64,12 @@ fn main() {
     } else {
         break_minutes = get_break_length_from_user();
     }
-    println!("Starting Pomodoro...\n");
+    println!("{}", "Starting Pom".red());
 
     println!("task mins: {}\tbreak mins: {}", task_minutes, break_minutes);
-
-    println!("Starting {}", task_name);
+    
+    let start_string = format!("Starting {}", task_name);
+    println!("{}", start_string.green().bold());
     countdown(task_minutes);
     println!("Time for a {} minute break!", break_minutes);
     countdown(break_minutes);
@@ -117,7 +120,8 @@ fn get_break_length_from_user() -> i64  {
 fn print_time(duration: Duration) {
     io::stdout().flush()
         .expect("Could not flush stdout");
-    print!("\r{}:{}:{}   ", duration.num_hours(), duration.num_minutes() % 60, duration.num_seconds() % 60);
+    let timer = format!("\r{}:{}:{}   ", duration.num_hours(), duration.num_minutes() % 60, duration.num_seconds() % 60);
+    print!("{}", timer.green().bold());
 }
 
 fn countdown(num_minutes: i64) {
