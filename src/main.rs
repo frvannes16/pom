@@ -64,12 +64,11 @@ fn main() {
     } else {
         break_minutes = get_break_length_from_user();
     }
-    println!("{}", "Starting Pom".red());
 
-    println!("task mins: {}\tbreak mins: {}", task_minutes, break_minutes);
+    println!("{}", "Pom".red().bold());
+    println!("Starting {}", task_name.green().bold());
+    println!("Task Length: {} minutes\nBreak Length: {} minutes", task_minutes, break_minutes);
     
-    let start_string = format!("Starting {}", task_name);
-    println!("{}", start_string.green().bold());
     countdown(task_minutes);
     println!("Time for a {} minute break!", break_minutes);
     countdown(break_minutes);
@@ -83,7 +82,7 @@ fn get_task_name_from_user() -> String{
     println!("Task Name: ");
     io::stdin().read_line(&mut task_name)
         .expect("Are you trying to break this thing? This is why you can't have nice things.");
-    task_name.trim();
+    task_name = String::from(task_name.trim());
     return task_name;
 }
 
