@@ -7,3 +7,5 @@ authors = ["Franklin Van Nes <franklin.vannes@gmail.com>"]
 time = "0.1.38"
 clap = "~2.27.0"
 colored = "1.6"
+serde = "1.0.25"
+serde_yaml = "0.7.3"

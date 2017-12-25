@@ -3,14 +3,19 @@ extern crate clap;
 extern crate colored;
 
 use colored::*;
-use clap::{Arg, App};
+use clap::{Arg, App, SubCommand};
 use std::io;
 use std::io::Write;
 use std::thread;
 use time::Duration;
 
+// Pom Modules
+pub mod manager;
+
 const DEFAULT_TASK_MINS: i64  = 25;
 const DEFAULT_BREAK_MINS: i64 = 5;
+
+
 
 fn main() {
 
@@ -33,8 +38,21 @@ fn main() {
         .arg(Arg::with_name("TASK")
              .help("The name of the task, wrapped in quotes")
              .required(false)
-             .index(1)).get_matches();
+             .index(1))
+        .subcommand(SubCommand::with_name("init")
+                    .about("Creates a .pom directory where pom can store settings and work logs."))
+        .get_matches();
 
+    if matches.is_present("init") {
+        manager::init();
+    } else {
+        make_task(&matches);
+    }
+
+}
+
+
+fn make_task(matches: &clap::ArgMatches) {
 
     let task_name: String;
     let task_minutes: i64;
