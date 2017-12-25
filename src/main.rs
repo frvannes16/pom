@@ -5,54 +5,18 @@ use std::io::Write;
 use std::thread;
 use time::Duration;
 
-const DEFAULT_TASK_MINS: i64  = 25;
+const DEFAULT_TASK_MINS: i64= 25;
 const DEFAULT_BREAK_MINS: i64 = 5;
 
 fn main() {
     println!("Starting Pomodoro...\n");
 
-    println!("What is your next task? ");
+    let task_name   = get_task_name_from_user();
+    let task_minutes    = get_task_length_from_user(&task_name);
+    let break_minutes   = get_break_length_from_user();
 
-    let mut task_name = String::new();
+    println!("task mins: {}\tbreak mins: {}", task_minutes, break_minutes);
 
-    println!("Task Name: ");
-
-    io::stdin().read_line(&mut task_name)
-        .expect("Are you trying to break this thing? This is why you can't have nice things.");
-
-    let task_minutes;
-    let break_minutes;
-
-    loop {
-        println!("How long will this take? (minutes) [default = 25]: ");
-
-        let mut task_min_input  = String::new();
-        let mut break_min_input = String::new();
-
-        io::stdin().read_line(&mut task_min_input)
-            .expect("Failed to read line");
-
-       task_minutes = match task_min_input.trim().parse() {
-            Ok(mins) => mins,
-            Err(_)   => DEFAULT_TASK_MINS,
-        };
-
-        println!("How long will the following break be? (minutes) [default = 5]: ");
-
-
-        io::stdin().read_line(&mut break_min_input)
-            .expect("Failed to read line");
-
-        break_minutes = match break_min_input.trim().parse() {
-            Ok(mins)    => mins,
-            Err(_)      => DEFAULT_BREAK_MINS,
-        };
-    
-
-        println!("task mins: {}\tbreak mins: {}", task_minutes, break_minutes);
-        break;
-
-    } // End loop.
 
     println!("Starting {}", task_name);
     countdown(task_minutes);
@@ -61,6 +25,45 @@ fn main() {
     println!("Break is over! Back to work!");
 }
 
+fn get_task_name_from_user() -> String{
+    let mut task_name = String::new();
+    println!("What is your next task? ");
+    println!("Task Name: ");
+    io::stdin().read_line(&mut task_name)
+        .expect("Are you trying to break this thing? This is why you can't have nice things.");
+    task_name.trim();
+    return task_name;
+}
+
+fn get_task_length_from_user(task_name: &String) -> i64 {
+
+    println!("How long will it take to {}? (minutes) [default = 25]: ", task_name);
+
+    let mut task_min_input  = String::new();
+
+    io::stdin().read_line(&mut task_min_input)
+        .expect("Failed to read line");
+
+    return match task_min_input.trim().parse() {
+        Ok(mins) => mins,
+        Err(_)   => DEFAULT_TASK_MINS,
+    };
+}
+
+
+fn get_break_length_from_user() -> i64  {
+    println!("How long will the following break be? (minutes) [default = 5]: ");
+
+    let mut break_min_input = String::new();
+
+    io::stdin().read_line(&mut break_min_input)
+        .expect("Failed to read line");
+
+    return match break_min_input.trim().parse() {
+        Ok(mins)    => mins,
+        Err(_)      => DEFAULT_BREAK_MINS,
+    };
+}
 
 fn print_time(duration: Duration) {
     io::stdout().flush()
