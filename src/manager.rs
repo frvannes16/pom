@@ -1,11 +1,21 @@
+extern crate serde_yaml;
+
 use std::fs;
 use std::fs::File;
 use std::process;
+use std::io::prelude::*;
 
 const POM_DIR: &str           = ".pom";
 const POM_SETTINGS_FILE: &str = "settings.yaml";
 const POM_LOG_FILE: &str      = "pom.log";
 const POM_CSV_FILE: &str      = "pom.csv";
+
+#[derive(Serialize, Deserialize)]
+struct Settings {
+    default_task_time: i64,
+    default_break_time: i64,
+}
+
 
 pub fn init() {
     if pom_dir_exists() {
@@ -30,7 +40,21 @@ fn build_pom_dir() {
 
 
 fn build_settings_yaml() {
-    let mut settings_yaml = File::create(settings_path());    
+    let mut settings_yaml = File::create(settings_path())
+        .expect("Could not create settings file.");
+    let settings = make_default_settings();
+    let serialized_settings = serde_yaml::to_string(&settings).unwrap();
+
+    settings_yaml.write_all(serialized_settings.as_bytes());
+
+
+}
+
+fn make_default_settings() -> Settings {
+    return Settings {
+        default_task_time: 25,
+        default_break_time: 5,
+    };
 }
 
 

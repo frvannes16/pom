@@ -1,3 +1,4 @@
+#[macro_use] extern crate serde_derive;
 extern crate time;
 extern crate clap;
 extern crate colored;
