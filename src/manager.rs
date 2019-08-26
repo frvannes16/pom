@@ -14,11 +14,13 @@ struct Settings {
     default_break_time: i64,
 }
 
+const DEFAULT_SETTINGS: Settings = Settings {
+        default_task_time: 25,
+        default_break_time: 5,
+    };
 
 pub fn init() {
-    if pom_dir_exists() {
-        println!("Pom already initiated - .pom directory already exists!");
-    } else {
+    if !settings_dir_exists() {
         build_pom_dir();
         build_settings_yaml();
     }
@@ -40,31 +42,25 @@ fn build_pom_dir() {
 fn build_settings_yaml() {
     let mut settings_yaml = File::create(settings_path())
         .expect("Could not create settings file.");
-    let settings = make_default_settings();
+    let settings = DEFAULT_SETTINGS;
     let serialized_settings = serde_yaml::to_string(&settings).unwrap();
 
-    settings_yaml.write_all(serialized_settings.as_bytes());
-
-
-}
-
-fn make_default_settings() -> Settings {
-    return Settings {
-        default_task_time: 25,
-        default_break_time: 5,
+    match settings_yaml.write_all(serialized_settings.as_bytes()) {
+        Ok(none) => none,
+        Err(e) => {
+            println!("Failed to write pom project settings.yaml file: {}", e);
+            process::exit(1);},
     };
 }
 
-
-fn pom_dir_exists() -> bool {
+fn settings_dir_exists() -> bool {
     // Checks the current directory to see if the .pom directory exists.
-    // TODO: Check the parent directories too. How does git do this?
     let mut pom_dir_exists = false;
-    let dir_iterator    = fs::read_dir(".").expect("I couldn't read the current directory");
+    let dir_iterator    = fs::read_dir(".").expect("Could not read the current directory");
 
     for dir_entry in dir_iterator {
         let dir_entry = dir_entry
-            .expect("The directory is corrupted. There is something I couldn't read");
+            .expect("Could not read directory. Directory corrupt");
         println!("{:?}", dir_entry.file_name());
 
         if dir_entry.file_name().into_string()
