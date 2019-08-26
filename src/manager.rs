@@ -7,8 +7,6 @@ use std::io::prelude::*;
 
 const POM_DIR: &str           = ".pom";
 const POM_SETTINGS_FILE: &str = "settings.yaml";
-const POM_LOG_FILE: &str      = "pom.log";
-const POM_CSV_FILE: &str      = "pom.csv";
 
 #[derive(Serialize, Deserialize)]
 struct Settings {

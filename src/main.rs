@@ -20,7 +20,7 @@ const DEFAULT_BREAK_MINS: i64 = 5;
 
 fn main() {
 
-    let matches = App::new("Pom")
+    let parsed_args = App::new("Pom")
         .version("1.0")
         .author("Franklin Van Nes <franklin.vannes@gmail.com>")
         .about("A command line pomodoro timer that logs your productivity.")
@@ -44,29 +44,29 @@ fn main() {
                     .about("Creates a .pom directory where pom can store settings and work logs."))
         .get_matches();
 
-    if matches.is_present("init") {
+    if parsed_args.is_present("init") {
         manager::init();
     } else {
-        make_task(&matches);
+        make_task(&parsed_args);
     }
 
 }
 
 
-fn make_task(matches: &clap::ArgMatches) {
+fn make_task(parsed_args: &clap::ArgMatches) {
 
     let task_name: String;
     let task_minutes: i64;
     let break_minutes: i64;
 
-    if matches.is_present("TASK") {
-        task_name = String::from(matches.value_of("TASK").unwrap());
+    if parsed_args.is_present("TASK") {
+        task_name = String::from(parsed_args.value_of("TASK").unwrap());
     } else {
         task_name = get_task_name_from_user();
     }
 
-    if matches.is_present("Task Minutes") { 
-        task_minutes =  match matches.value_of("Task Minutes").unwrap().trim().parse() {
+    if parsed_args.is_present("Task Minutes") { 
+        task_minutes =  match parsed_args.value_of("Task Minutes").unwrap().trim().parse() {
             Ok(mins)    => mins,
             Err(_)      => DEFAULT_TASK_MINS,
         };
@@ -74,8 +74,8 @@ fn make_task(matches: &clap::ArgMatches) {
         task_minutes = get_task_length_from_user(&task_name);
     }
 
-    if matches.is_present("Break Minutes") {
-        break_minutes =  match matches.value_of("Break Minutes").unwrap().trim().parse() {
+    if parsed_args.is_present("Break Minutes") {
+        break_minutes =  match parsed_args.value_of("Break Minutes").unwrap().trim().parse() {
             Ok(mins)    => mins,
             Err(_)      => DEFAULT_BREAK_MINS,
         };
