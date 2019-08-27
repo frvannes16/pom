@@ -19,10 +19,16 @@ const DEFAULT_SETTINGS: Settings = Settings {
         default_break_time: 5,
     };
 
+pub fn init_required() -> bool {
+    !settings_dir_exists()
+}
+
 pub fn init() {
-    if !settings_dir_exists() {
+    if init_required() {
         build_pom_dir();
         build_settings_yaml();
+    } else {
+        println!("Init already completed.")
     }
 }
 

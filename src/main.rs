@@ -4,7 +4,7 @@ extern crate clap;
 extern crate colored;
 
 use colored::*;
-use clap::{Arg, App, SubCommand};
+use clap::{Arg, App};
 use std::io;
 use std::io::Write;
 use std::thread;
@@ -16,9 +16,22 @@ pub mod manager;
 const DEFAULT_TASK_MINS: i64  = 25;
 const DEFAULT_BREAK_MINS: i64 = 5;
 
+struct Task {
+    name: String,
+    duration_in_minutes: i64,
+}
+
+struct Break {
+    duration_in_minutes: i64,
+} 
 
 
 fn main() {
+    introduce();
+
+    if manager::init_required() {
+        manager::init();
+    }
 
     let parsed_args = App::new("Pom")
         .version("1.0")
@@ -40,24 +53,19 @@ fn main() {
              .help("The name of the task, wrapped in quotes")
              .required(false)
              .index(1))
-        .subcommand(SubCommand::with_name("init")
-                    .about("Creates a .pom directory where pom can store settings and work logs."))
         .get_matches();
 
-    if parsed_args.is_present("init") {
-        manager::init();
-    } else {
-        make_task(&parsed_args);
-    }
+    let task: Task = make_task(&parsed_args);
+    let post_task_break: Break = make_break(&parsed_args);
 
+    start_task(task);
+    start_break(post_task_break);
 }
 
 
-fn make_task(parsed_args: &clap::ArgMatches) {
-
+fn make_task(parsed_args: &clap::ArgMatches) -> Task {
     let task_name: String;
     let task_minutes: i64;
-    let break_minutes: i64;
 
     if parsed_args.is_present("TASK") {
         task_name = String::from(parsed_args.value_of("TASK").unwrap());
@@ -73,25 +81,40 @@ fn make_task(parsed_args: &clap::ArgMatches) {
     } else {
         task_minutes = get_task_length_from_user(&task_name);
     }
+    return Task{
+        name: task_name,
+        duration_in_minutes: task_minutes,
+    };
+}
+
+fn make_break(parsed_args: &clap::ArgMatches) -> Break {
+    let break_minutes: i64;
 
     if parsed_args.is_present("Break Minutes") {
         break_minutes =  match parsed_args.value_of("Break Minutes").unwrap().trim().parse() {
             Ok(mins)    => mins,
             Err(_)      => DEFAULT_BREAK_MINS,
         };
-
     } else {
         break_minutes = get_break_length_from_user();
     }
 
-    println!("{}", "Pom".red().bold());
-    println!("Starting {}", task_name.green().bold());
-    println!("Task Length: {} minutes\nBreak Length: {} minutes", task_minutes, break_minutes);
+    return Break{
+        duration_in_minutes: break_minutes,
+    }
+}
+
+
+fn start_task(task: Task) {
+    println!("Starting {}", task.name.green().bold());
+    println!("Task Length: {} minutes\n", task.duration_in_minutes);
     
-    countdown(task_minutes);
-    println!("Time for a {} minute break!", break_minutes);
-    countdown(break_minutes);
-    println!("Break is over! Back to work!");
+    countdown(task.duration_in_minutes);
+}
+
+fn start_break(task_break: Break) {
+    println!("Starting {}", "break".green().bold());
+    println!("Break Length: {} minutes\n", task_break.duration_in_minutes)
 }
 
 
@@ -150,4 +173,8 @@ fn countdown(num_minutes: i64) {
         thread::sleep(std::time::Duration::from_secs(1));
         now = time::now();
     }
+}
+
+fn introduce() {
+    println!("Welcome to {}. Let's get to work!", "Pom".red().bold());
 }
