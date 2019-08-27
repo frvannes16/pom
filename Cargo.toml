@@ -1,5 +1,5 @@
 [package]
-name = "pomodoro"
+name = "pom"
 version = "0.1.0"
 authors = ["Franklin Van Nes <franklin.vannes@gmail.com>"]
 
