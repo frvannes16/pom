@@ -38,6 +38,13 @@ fn main() {
         .author("Franklin Van Nes <franklin.vannes@gmail.com>")
         .about("A command line pomodoro timer that logs your productivity.")
         .arg(
+            Arg::with_name("Logs")
+                .short("logs")
+                .value_name("LOGS")
+                .help("Outputs a csv of task history to stdout")
+                .takes_value(false),
+        )
+        .arg(
             Arg::with_name("Task Minutes")
                 .short("t")
                 .long("task-mins")
@@ -61,12 +68,45 @@ fn main() {
         )
         .get_matches();
 
+        if parsed_args.is_present("Logs") {
+            manager::print_logs();
+            return;
+        }
+
     let task: Task = make_task_from(&parsed_args);
     let post_task_break: Break = make_break_from(&parsed_args);
-    let task_readied: bool = true;
+
+    manager::record_task(
+        &*task.name,
+        task.duration_in_minutes,
+        post_task_break.duration_in_minutes,
+    )
+    .expect("Could not record this task");
 
     start_task(task);
     start_break(post_task_break);
+    loop {
+        let new_task_name = get_task_name_from_user();
+        let new_task_duration = get_task_length_from_user(&new_task_name);
+        let new_task = Task {
+            name: new_task_name,
+            duration_in_minutes: new_task_duration,
+        };
+
+        let new_break_length = get_break_length_from_user();
+        let new_break = Break {
+            duration_in_minutes: new_break_length,
+        };
+        manager::record_task(
+            &*new_task.name,
+            new_task.duration_in_minutes,
+            new_break.duration_in_minutes,
+        )
+        .expect("Could not record this task.");
+
+        start_task(new_task);
+        start_break(new_break);
+    }
 }
 
 fn make_task_from(parsed_args: &clap::ArgMatches) -> Task {
@@ -119,7 +159,8 @@ fn start_task(task: Task) {
 
 fn start_break(task_break: Break) {
     println!("Starting {}", "break".green().bold());
-    println!("Break Length: {} minutes\n", task_break.duration_in_minutes)
+    println!("Break Length: {} minutes\n", task_break.duration_in_minutes);
+    countdown(task_break.duration_in_minutes);
 }
 
 fn get_task_name_from_user() -> String {
